@@ -4,10 +4,10 @@
 Team 8
 
 ## Members
-Abdulwahab Badirah 202160410 
-Yazed almutairi 202164390 
-Abdulmuhaymin Althabit 202275600 
-Mohammed Alfaraj 202323090
+- Abdulwahab Badirah 202160410 
+- Yazed almutairi 202164390 
+- Abdulmuhaymin Althabit 202275600 
+- Mohammed Alfaraj 202323090
 
 ## Project Summary
 This repository contains our ICS344 project deliverables for the DVSA (Damn Vulnerable Serverless Application) security assessment.
