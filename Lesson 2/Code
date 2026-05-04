@@ -171,3 +171,10 @@ verifyCognitoJwt(jwt).then((claims) => {
 
 
 ## Add to the end before };
+
+}).catch((e) => {
+  console.log("JWT verify failed:", e);
+  return callback(null, resp(401, { status: "err", msg: "invalid token" }));
+});
+
+## Verify the fix by testing previous code
