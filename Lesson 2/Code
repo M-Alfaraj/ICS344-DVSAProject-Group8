@@ -1,0 +1,8 @@
+# Lesson 2 – Broken Authentication Code
+
+## Environment Variables
+
+```bash
+export API="<API_URL>"
+export TOKEN_B="<TOKEN_B>"
+export TOKEN_C="<TOKEN_C>"
